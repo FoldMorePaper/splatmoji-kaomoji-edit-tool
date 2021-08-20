@@ -5,11 +5,39 @@ DB_FILE = "kaomoji.txt"
 class KaomojiDB:
     """Offers facilities to edit and check the DB file."""
 
-    def __init__(self):
+    kaomojis = list()
+
+    def __init__(self, filename=False):
+
+        if filename:
+            self.load(filename=filename)
+
+    def load(self, filename):
+        """Loads a db file."""
+
+        with open(filename) as dbfile:
+            lines = dbfile.readlines()
+
+        for line in lines:
+
+            code, keywords = line.strip().split("\t")
+
+            kaomoji = Kaomoji(code=code, keywords=keywords)
+
+            # TODO: FIXME: WE NEED TO CHECK IF KAOMOJI EXISTS TO UPDATE INSTEAD
+            #  OF ADDING, HERE:
+            self.kaomojis.append(kaomoji)
+
+    def write(self):
+        """Writes a db file."""
         pass
 
-    def entity_exists(self, code):
+    def entity_exists(self, kaomoji: Kaomoji):
         """Checks if a kaomoji exists already in the database."""
+        pass
+
+    def update_entity(self, kaomoji: Kaomoji):
+        """Updates keywords to database."""
         pass
 
 class Kaomoji:
@@ -18,9 +46,13 @@ class Kaomoji:
     code = str()  # unicode of the kaomoji
     keywords = list()  # list of strings
 
-    def __init__(self, code):
+    def __init__(self, code, keywords=False):
 
         self.code = code
+
+        if keywords:
+            self.keywords = keywords.split(',')
+
         self.hash = self._makehash(code)
 
     def add_keywork(self, keyword):
@@ -52,6 +84,8 @@ class Kaomoji:
     def __str__(self):
         return self.code
 
+
+db = KaomojiDB(file=DB_FILE)
 
 code = input("code pls?: ")
 
