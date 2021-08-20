@@ -189,22 +189,33 @@ while True:
 
         command, args = command.split(" ", maxsplit=1)
 
-
         # let's instantiate our interface for given commands
         interface = KaomojiTool(db=db, kaomoji=kaomoji)
 
+        #
+        # ADD
+        #
         if command == "add":
             interface.add(args)
 
+        #
+        # BACK
+        #
         elif command == "back":
             break
 
+        #
+        # DESTROY
+        #
         elif command == "destroy":
             option = input("Delete the kaomoji from database? (y/N) ")
             if option in ('Y', 'y'):
                 interface.destroy()
             break
 
+        #
+        # EXIT
+        #
         elif command == "exit":
 
             option = input("Save changes? (y/n) ")
@@ -221,15 +232,30 @@ while True:
             elif option in ('N', 'n'):
                 exit(0)
 
+        #
+        # HELP
+        #
         elif command == "help":
             continue
 
+        #
+        # RANDOM
+        #
+        # THIS IS BEING THOUGH OF BEING IMPLEMENTED SO WE CAN TAG BETTER SOME
+        # KAOMOJIS WHICH AREN'T BEING
+        #
         # elif args[0] == "random":
         #     pass
 
+        #
+        # RM
+        #
         elif command == "rm":
             interface.rm(args=args)
 
+        #
+        # WRITE
+        #
         elif command == "write":
 
             print("Backing up database...")
