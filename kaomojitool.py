@@ -23,18 +23,35 @@ COMMANDS =  {
     'back': "Go back to the kaomoji selection console",
     'destroy': "Delete the kaomoji from the database",
     'exit': "Ask to save the changes if there are changes, then exit",
+    "help": "Show commands (this message)",
     'random': "Select a random kaomoji so you can add more keywords to it",
     'rm': "Remove one or more comma-separated keyword(s) to the kaomoji",
     'write': "Backup the database and save the changes to the original",
 }
 
-welcome = """
+COMMANDS_HELP = str()
+COMMANDS_HELP = """\
+List of commands for the selected kaomoji/database:\n
+"""
+for command, description in COMMANDS.items():
+    COMMANDS_HELP += "{command}: {description}\n"\
+        .format(command=command, description=description)
+
+WELCOME = """
 ---
 Welcome. Select a kaomoji first, and then press <enter>, for example:
 {console}(ヘ。ヘ)
 ---
 
 """.format(console=CONSOLE)
+
+INSIDE_KAOMOJI = """
+You chose the kaomoji {code}
+
+{status}
+
+{commands}
+"""
 
 if len(argv) < 2:
     print(USAGE)
@@ -46,7 +63,7 @@ db = KaomojiDB(filename=filename)
 # kaomoji selection
 while True:
 
-    print(welcome)
+    print(WELCOME)
 
     # prompt 1
     code = input(CONSOLE)
@@ -63,15 +80,26 @@ while True:
         status = "New kaomoji! Not on the database currently."
         kaomoji = db.add_kaomoji(selected_kaomoji)
 
-    #print(status)
-
     # inside kaomoji
     while True:
-        inside_kaomoji = """
-        You chose the kaomoji {code}
-        {status}
-        """.format(status=status)
+        inside_kaomoji = INSIDE_KAOMOJI.format(code=code, status=status,
+                                               commands=COMMANDS_HELP)
+
         print(inside_kaomoji)
 
         # prompt 2
         command = input(COMMAND)
+
+        args = command.split(" ")
+
+        if args[0] == "back":
+            del kaomoji
+            del code
+            break
+
+        elif args[0] == "help":
+            print(COMMANDS_HELP)
+
+        elif args[0] == "write":
+            print("Writing database...")
+            db.write()
