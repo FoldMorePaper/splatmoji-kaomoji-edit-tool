@@ -17,8 +17,10 @@ class Kaomoji:
 
         self.hash = self._makehash(code)
 
+
     def add_keywork(self, keyword):
         self.keywords.append(keyword.strip())
+
 
     def _makehash(self, code):
         """Gives a UUID for a given kaomoji, for comparison.
@@ -75,6 +77,8 @@ class KaomojiDB:
     def load_file(self, filename):
         """Loads a db file."""
 
+        self.filename = filename
+
         db_file = open(filename, "r")
         #with open(filename) as dbfile:
         lines = db_file.readlines()
@@ -93,22 +97,27 @@ class KaomojiDB:
         self.entry_num = len(self.kaomojis)
 
 
-    def write(self):
+    def write(self, filename=None):
         """Writes a db file."""
 
-        for kaomoji in self.kaomojis.values():
-            code = kaomoji.code
-            keywords_string = ",".join(kaomoji.keywords)
+        if not filename:
+            filename = self.filename
+
+        db_file = open(filename, "w")
+
+        for code, kaomoji in self.kaomojis.items():
+            #code = kaomoji.code
+            keywords_string = ", ".join(kaomoji.keywords)
             db_line = "{0}\t{1}\n".format(code, keywords_string)
-            # TODO: do me
+            db_file.write(db_line)
+
+        db_file.close()
 
 
     def kaomoji_exists(self, other: Kaomoji):
         """Checks if a kaomoji exists already in the database."""
 
-        if other.code in self.kaomojis.keys():
-        # for kaomoji in self.kaomojis:
-        #     if other == kaomoji:
+        if other.code in self.kaomojis:
                 return True
 
         return False
@@ -121,30 +130,29 @@ class KaomojiDB:
 
     def get_kaomoji_by_code(self, code: str):
         """Gets a Kaomoji with it's current keywords from the database."""
+
         return self.kaomojis[code]
-        # for kaomoji in self.kaomojis:
-        #     if code == kaomoji.code:
-        #         return kaomoji
 
     def get_kaomoji_by_kaomoji(self, other: Kaomoji):
         """Gets a Kaomoji with it's current keywords from the database."""
-        # for kaomoji in self.kaomojis.values():
-        #     if other == kaomoji:
-        #         return kaomoji
+
         return self.kaomojis[other.code]
 
     def get_kaomoji_by_hash(self, thehash: int):
         """Gets a Kaomoji with it's current keywords from the database."""
+
         for kaomoji in self.kaomojis.values():
             if thehash == kaomoji.hash:
                 return kaomoji
 
     def remove_kaomoji(self, kaomoji: Kaomoji):
         """Removes a Kaomoji from the database."""
-        pass
+
+        del self.kaomojis[kaomoji.code]
 
 
     def update_kaomoji(self, kaomoji: Kaomoji):
         """Updates keywords to database."""
-        pass
+
+        self.kaomojis.update({kaomoji.code: kaomoji})
 

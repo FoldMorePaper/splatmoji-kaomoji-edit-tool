@@ -14,9 +14,6 @@ code = input("code pls?: ")
 
 new_kaomoji = Kaomoji(code)
 
-# print(new_kaomoji)
-# print(new_kaomoji.hash)
-
 if db.kaomoji_exists(new_kaomoji):
     print("Already on the database")
     # return the kaomoji with the keywords if it has some
@@ -36,3 +33,4 @@ while True:
     new_kaomoji.add_keywork(keyword)
 
 db.update_kaomoji(kaomoji=new_kaomoji)
+db.write()
