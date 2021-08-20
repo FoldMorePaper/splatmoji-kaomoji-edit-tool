@@ -18,8 +18,14 @@ class Kaomoji:
         self.hash = self._makehash(code)
 
 
-    def add_keywork(self, keyword):
-        self.keywords.append(keyword.strip())
+    def add_keyword(self, keyword):
+        if not keyword in self.keywords:
+            self.keywords.append(keyword.strip())
+
+
+    def remove_keyword(self, keyword):
+        if keyword in self.keywords:
+            self.keywords.remove(keyword.strip())
 
 
     def _makehash(self, code):

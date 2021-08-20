@@ -30,7 +30,7 @@ while True:
     if keyword == "/end":
         break
 
-    new_kaomoji.add_keywork(keyword)
+    new_kaomoji.add_keyword(keyword)
 
 db.update_kaomoji(kaomoji=new_kaomoji)
 db.write()

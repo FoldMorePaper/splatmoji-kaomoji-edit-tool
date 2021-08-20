@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 
 from sys import argv
+import time
 
 from kaomoji import Kaomoji
 from kaomoji import KaomojiDB
+
+def backup_db(db: KaomojiDB):
+
+    timestamp = time.time()
+    backup_filename = "{filename}.{timestamp}.bkp".format(filename=db.filename,
+                                                          timestamp=timestamp)
+    backup = KaomojiDB(filename=db.filename)
+    backup.write(filename=backup_filename)
 
 USAGE = """
 Usage:
@@ -25,7 +34,7 @@ COMMANDS =  {
     'exit': "Ask to save the changes if there are changes, then exit",
     "help": "Show commands (this message)",
     'random': "Select a random kaomoji so you can add more keywords to it",
-    'rm': "Remove one or more comma-separated keyword(s) to the kaomoji",
+    'rm': "Remove one or more comma-separated keyword(s) from the kaomoji",
     'write': "Backup the database and save the changes to the original",
 }
 
@@ -41,6 +50,8 @@ WELCOME = """
 ---
 Welcome. Select a kaomoji first, and then press <enter>, for example:
 {console}(ヘ。ヘ)
+
+or /exit to exit.
 ---
 
 """.format(console=CONSOLE)
@@ -68,6 +79,24 @@ while True:
     # prompt 1
     code = input(CONSOLE)
 
+    if code == "/exit":
+        option = input("Save changes? (y/n) ")
+
+        if option in ('Y', 'y'):
+            print("Backing up database...")
+            backup_db(db=db)
+
+            print("Writing database...")
+            db.write()
+
+            exit(0)
+
+        elif option in ('N', 'n'):
+            exit(0)
+
+        print("Doing nothing as the answer was invalid.")
+        continue
+
     selected_kaomoji = Kaomoji(code)
 
     if db.kaomoji_exists(selected_kaomoji):
@@ -90,16 +119,61 @@ while True:
         # prompt 2
         command = input(COMMAND)
 
-        args = command.split(" ")
+        args = command.split(" ", maxsplit=1)
 
-        if args[0] == "back":
-            del kaomoji
-            del code
+        if args[0] == "add":
+            keywords = args[1].split(",")
+            for keyword in keywords:
+                kaomoji.add_keyword(keyword)
+
+        elif args[0] == "back":
+            #del kaomoji
+            #del code
             break
 
+        elif args[0] == "destroy":
+            option = input("Delete the kaomoji from database? (y/N) ")
+
+            if option in ('Y', 'y'):
+                db.remove_kaomoji(kaomoji)
+
+            break
+
+        elif args[0] == "exit":
+
+            option = input("Save changes? (y/n) ")
+
+            if option in ('Y', 'y'):
+                print("Backing up database...")
+                backup_db(db=db)
+
+                print("Writing database...")
+                db.write()
+
+                exit(0)
+
+            elif option in ('N', 'n'):
+                exit(0)
+
+            print("Doing nothing as the answer was invalid.")
+            continue
+
         elif args[0] == "help":
-            print(COMMANDS_HELP)
+            continue
+            #print(COMMANDS_HELP)
+
+        elif args[0] == "random":
+            pass
+
+        elif args[0] == "rm":
+            keywords = args[1].split(",")
+            for keyword in keywords:
+                kaomoji.remove_keyword(keyword)
 
         elif args[0] == "write":
+
+            print("Backing up database...")
+            backup_db(db=db)
+
             print("Writing database...")
             db.write()
