@@ -125,12 +125,7 @@ class KaomojiTool:
             self.kaomoji.remove_keyword(keyword)
 
     def write(self):
-        # elif args[0] == "write":
 
-        print("Backing up database...")
-        backup_db(db=self.db)
-
-        print("Writing database...")
         self.db.write()
 
 if len(argv) < 2:
@@ -194,8 +189,10 @@ while True:
 
         command, args = command.split(" ", maxsplit=1)
 
+
+        # let's instantiate our interface for given commands
         interface = KaomojiTool(db=db, kaomoji=kaomoji)
-        # interface.execute_command(command_line)
+
         if command == "add":
             interface.add(args)
 
@@ -209,39 +206,34 @@ while True:
             break
 
         elif command == "exit":
-        #
+
             option = input("Save changes? (y/n) ")
-        #
+
             if option in ('Y', 'y'):
+
                 print("Backing up database...")
-        #         backup_db(db=db)
-        #
+                interface.backup_db()
+
                 print("Writing database...")
                 interface.write()
-        #
-        #         exit(0)
-        #
+                exit(0)
+
             elif option in ('N', 'n'):
                 exit(0)
-        #
-        #     print("Doing nothing as the answer was invalid.")
-        #     continue
-        #
-        # elif args[0] == "help":
-        #     continue
-        #
-        # # elif args[0] == "random":
-        # #     pass
-        #
-        # elif args[0] == "rm":
-        #     keywords = args[1].split(",")
-        #     for keyword in keywords:
-        #         kaomoji.remove_keyword(keyword)
-        #
-        # elif args[0] == "write":
-        #
-        #     print("Backing up database...")
-        #     backup_db(db=db)
-        #
-        #     print("Writing database...")
-        #     db.write()
+
+        elif command == "help":
+            continue
+
+        # elif args[0] == "random":
+        #     pass
+
+        elif command == "rm":
+            interface.rm(args=args)
+
+        elif command == "write":
+
+            print("Backing up database...")
+            interface.backup_db()
+
+            print("Writing database...")
+            interface.write()
