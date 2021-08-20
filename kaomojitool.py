@@ -78,8 +78,7 @@ class KaomojiTool:
             self.kaomoji.add_keyword(keyword)
 
     def back(self):
-        # elif args[0] == "back":
-        break
+        pass
 
     def backup_db(self):
 
@@ -187,7 +186,8 @@ while True:
         # prompt 2
         command_line = input(COMMAND)
 
-        command, args = command.split(" ", maxsplit=1)
+        command, *args = command_line.split(" ", maxsplit=1)
+        args = " ".join(args)
 
         # let's instantiate our interface for given commands
         interface = KaomojiTool(db=db, kaomoji=kaomoji)
@@ -227,6 +227,7 @@ while True:
 
                 print("Writing database...")
                 interface.write()
+
                 exit(0)
 
             elif option in ('N', 'n'):
