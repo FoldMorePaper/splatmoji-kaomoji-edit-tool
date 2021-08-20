@@ -2,6 +2,9 @@
 
 from sys import argv
 
+from kaomoji import Kaomoji
+from kaomoji import KaomojiDB
+
 USAGE = """
 Usage:
   {0} <db file name>
@@ -10,12 +13,8 @@ Usage:
   For more info visit: https://github.com/iacchus/splatmoji-kaomoji-edit-tool
 """.format(argv[0])
 
-if len(argv) < 2:
-    print(USAGE)
-    exit(1)
-
 CONSOLE = "(enter kaomoji) "
-COMMAND = "(enter command)"
+COMMAND = "(enter command) "
 
 COMMANDS =  {
     'add': "Add one or more comma-separated keyword(s) to the kaomoji",
@@ -27,17 +26,32 @@ COMMANDS =  {
 }
 
 welcome = """
-Welcome. Select a kaomoji first with the command 'kaomoji <kaomoji>', and then
-press <enter> for example:
+---
+Welcome. Select a kaomoji first, and then press <enter>, for example:
+{console}(ヘ。ヘ)
+---
 
->>> (ヘ。ヘ)
-"""
+""".format(console=CONSOLE)
+
+if len(argv) < 2:
+    print(USAGE)
+    exit(1)
+
+filename = argv[1]
+db = KaomojiDB(filename=filename)
 
 print(welcome)
 
 code = input(CONSOLE)
+selected_kaomoji = Kaomoji(code)
+if db.kaomoji_exists(selected_kaomoji):
+    status = "The selected kaomoji exists on the database and has currently",\
+             " {keywords}: {keywords}"
+    kaomoji = db.get_kaomoji_by_code(code)
+else:
+    status = "New kaomoji! Not on the database currently."
+    kaomoji = db.add_kaomoji(selected_kaomoji)
 
-exists = None
 keywords = None
 inside_kaomoji = """
 You chose the kaomoji {code}

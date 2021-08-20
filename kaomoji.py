@@ -127,6 +127,8 @@ class KaomojiDB:
         """Adds a Kaomoji to the database."""
         self.kaomojis.update({kaomoji.code: kaomoji})
 
+        return self.kaomojis[kaomoji.code]
+
 
     def get_kaomoji_by_code(self, code: str):
         """Gets a Kaomoji with it's current keywords from the database."""
@@ -156,3 +158,4 @@ class KaomojiDB:
 
         self.kaomojis.update({kaomoji.code: kaomoji})
 
+        return self.kaomojis[kaomoji.code]
