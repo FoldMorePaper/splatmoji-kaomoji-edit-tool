@@ -25,7 +25,8 @@ Usage:
 # PROMPTS
 CONSOLE = "(enter kaomoji) "
 COMMAND = "(enter command) "
-RANDOM = "(enter a comma-separated list of keywords; /next to next, /exit to exit)"
+RANDOM = "(enter a comma-separated list of keywords; /next to next," \
+         " /exit to exit) "
 
 COMMANDS =  {
     'add': "Add one or more comma-separated keyword(s) to the kaomoji",
@@ -110,6 +111,9 @@ while True:
         kaomoji = db.add_kaomoji(selected_kaomoji)
 
     # inside kaomoji
+    # NOTE: the only two important variables we receive here are `db` and
+    #       `kaomoji`; we can easily encapsulate these code below inside
+    #        a function or a class then. Maybe to be done.
     while True:
         inside_kaomoji = INSIDE_KAOMOJI.format(code=code, status=status,
                                                commands=COMMANDS_HELP)
@@ -162,8 +166,8 @@ while True:
             continue
             #print(COMMANDS_HELP)
 
-        elif args[0] == "random":
-            pass
+        # elif args[0] == "random":
+        #     pass
 
         elif args[0] == "rm":
             keywords = args[1].split(",")

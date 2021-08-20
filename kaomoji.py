@@ -95,9 +95,6 @@ class KaomojiDB:
 
             kaomoji = Kaomoji(code=code, keywords=keywords)
 
-            # TODO: FIXME: WE NEED TO CHECK IF KAOMOJI EXISTS TO UPDATE INSTEAD
-            #  OF ADDING, HERE:
-            #self.kaomojis.append(kaomoji)
             self.kaomojis.update({code: kaomoji})
 
         self.entry_num = len(self.kaomojis)
