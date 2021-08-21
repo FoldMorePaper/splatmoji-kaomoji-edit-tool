@@ -78,8 +78,8 @@ class KaomojiTool:
             #self.db.kaomojis[self.kaomoji.code].add_keyword(keyword)
             self.kaomoji.add_keyword(keyword)
 
-    def back(self):
-        pass
+    # def back(self):
+    #     pass
 
     def backup_db(self):
 
@@ -186,6 +186,7 @@ while True:
 
         print(inside_kaomoji)
 
+        repr(kaomoji)
         # prompt 2
         command_line = input(COMMAND)
 
@@ -219,6 +220,8 @@ while True:
                 print("Writing database...")
                 interface.write()
                 break
+            if option in ('N', 'n'):
+                continue
             else:
                 print("Doing nothing as the answer was invalid.")
                 continue
