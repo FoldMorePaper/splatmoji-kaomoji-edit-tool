@@ -75,6 +75,7 @@ class KaomojiTool:
     def add(self, args):
         keywords = args.split(",")
         for keyword in keywords:
+            #self.db.kaomojis[self.kaomoji.code].add_keyword(keyword)
             self.kaomoji.add_keyword(keyword)
 
     def back(self):
@@ -90,7 +91,9 @@ class KaomojiTool:
         backup.write(filename=backup_filename)
 
     def destroy(self):
-            self.db.remove_kaomoji(self.kaomoji)
+        self.db.remove_kaomoji(self.kaomoji)
+        #del self.kaomoji
+
 
 
     def exit(self):
@@ -118,7 +121,7 @@ class KaomojiTool:
     #     pass
 
     def rm(self, args):
-        # elif args[0] == "rm":
+
         keywords = args.split(",")
         for keyword in keywords:
             self.kaomoji.remove_keyword(keyword)
@@ -211,7 +214,14 @@ while True:
             option = input("Delete the kaomoji from database? (y/N) ")
             if option in ('Y', 'y'):
                 interface.destroy()
-            break
+                print("Backing up database...")
+                interface.backup_db()
+                print("Writing database...")
+                interface.write()
+                break
+            else:
+                print("Doing nothing as the answer was invalid.")
+                continue
 
         #
         # EXIT
@@ -253,7 +263,7 @@ while True:
         #
         elif command == "rm":
             interface.rm(args=args)
-
+            print(db.kaomojis[kaomoji.code].keywords)
         #
         # WRITE
         #

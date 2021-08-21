@@ -91,7 +91,12 @@ class KaomojiDB:
 
         for line in lines:
 
-            code, keywords = line.strip().split("\t")
+            processed_line = line.strip().split("\t", maxsplit=1)
+            if len(processed_line) == 2:
+                code, keywords = processed_line
+            else:
+                code, *throwaway = processed_line
+                keywords = None
 
             kaomoji = Kaomoji(code=code, keywords=keywords)
 
@@ -153,7 +158,8 @@ class KaomojiDB:
     def remove_kaomoji(self, kaomoji: Kaomoji):
         """Removes a Kaomoji from the database."""
 
-        del self.kaomojis[kaomoji.code]
+        if kaomoji.code in self.kaomojis:
+            del self.kaomojis[kaomoji.code]
 
 
     def update_kaomoji(self, kaomoji: Kaomoji):
