@@ -172,7 +172,8 @@ while True:
         selected_kaomoji = Kaomoji(code)
 
         if db.kaomoji_exists(selected_kaomoji):
-            kaomoji = db.get_kaomoji_by_code(code)
+            #kaomoji = db.get_kaomoji_by_code(code)
+            kaomoji = db.kaomojis[code]
             num = len(kaomoji.keywords)
             status = "The selected kaomoji exists on the database and has" \
                      " currently {num} keywords: {keywords}" \
@@ -180,6 +181,7 @@ while True:
         else:
             status = "New kaomoji! Not on the database currently."
             kaomoji = db.add_kaomoji(selected_kaomoji)
+            #kaomoji = db.kaomojis.update({selected_kaomoji.code: list()})
 
         inside_kaomoji = INSIDE_KAOMOJI.format(code=code, status=status,
                                                commands=COMMANDS_HELP)

@@ -15,7 +15,7 @@ class Kaomoji:
             self.keywords = [keyword.strip()
                              for keyword in keywords.split(',')]
 
-        self.hash = self._makehash(code)
+    #    self.hash = self._makehash(code)
 
 
     def add_keyword(self, keyword):
@@ -50,8 +50,8 @@ class Kaomoji:
         return hash(self) == hash(other)
 
 
-    def __hash__(self):
-        return self.hash
+    #def __hash__(self):
+    #    return self.hash
 
 
     def __repr__(self):
@@ -77,13 +77,15 @@ class KaomojiDB:
         if filename:
 
             self.filename = filename
-            self.load_file(filename=filename)
+            self.load_file(filename=self.filename)
 
 
     def load_file(self, filename):
         """Loads a db file."""
 
         self.filename = filename
+        self.kaomojis = dict()
+        self.entry_num = int()
 
         db_file = open(filename, "r")
         #with open(filename) as dbfile:
@@ -120,7 +122,7 @@ class KaomojiDB:
             db_file.write(db_line)
 
         db_file.close()
-
+        self.load_file(filename=filename)
 
     def kaomoji_exists(self, other: Kaomoji):
         """Checks if a kaomoji exists already in the database."""
@@ -159,7 +161,7 @@ class KaomojiDB:
         """Removes a Kaomoji from the database."""
 
         if kaomoji.code in self.kaomojis:
-            del self.kaomojis[kaomoji.code]
+            self.kaomojis.pop(kaomoji.code)
 
 
     def update_kaomoji(self, kaomoji: Kaomoji):
