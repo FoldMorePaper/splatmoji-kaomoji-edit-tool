@@ -54,13 +54,14 @@ WELCOME = """
 Welcome. Select a kaomoji first, and then press <enter>, for example:
 {console}(ヘ。ヘ)
 
+or /random to select a random kaomoji to edit;
 or /exit to exit.
 ---
 
 """.format(console=CONSOLE)
 
 INSIDE_KAOMOJI = """
-You chose the kaomoji {code}
+You chose the kaomoji `{code}'
 
 {status}
 
@@ -153,13 +154,14 @@ class KaomojiTool:
 
 if len(argv) < 2:  # If we don't have a database file via second argument, ask
                    #     for it
-
     print(USAGE)
     exit(1)
 
 filename = argv[1]
 db = KaomojiDB(filename=filename)  # populate out KaomojiDB class with
                                    #     the db file.
+
+changes_made = False
 
 # kaomoji selection
 while True:
@@ -170,24 +172,34 @@ while True:
     # prompts to enter a kaomoji - be it already existing or to be created.
     code = input(CONSOLE).strip()
 
+    if code == "/random":
+        chosen_random = random.choice(list(db.kaomojis.keys()))
+        code = chosen_random
+
     # implements the `/exit` command in the kaomoji selection prompt
-    if code == "/exit":
-        option = input("Save changes? (y/n) ")
+    elif code == "/exit":
 
-        if option in ('Y', 'y'):
-            print("Backing up database...")
-            backup_db(db=db)
+        if changes_made:
 
-            print("Writing database...")
-            db.write()
+            option = input("Save changes? (y/n) ")
 
+            if option in ('Y', 'y'):
+                print("Backing up database...")
+                backup_db(db=db)
+
+                print("Writing database...")
+                db.write()
+
+                exit(0)
+
+            elif option in ('N', 'n'):
+                exit(0)
+
+            print("Doing nothing as the answer was invalid.")
+            continue
+
+        else:  # not changes_made
             exit(0)
-
-        elif option in ('N', 'n'):
-            exit(0)
-
-        print("Doing nothing as the answer was invalid.")
-        continue
 
     # inside kaomoji
     # NOTE: the only two important variables we receive here are `db` and
@@ -214,6 +226,7 @@ while True:
             status = "New kaomoji! Not on the database currently."
             kaomoji = db.add_kaomoji(selected_kaomoji)
             #kaomoji = db.kaomojis.update({selected_kaomoji.code: list()})
+            changes_made = True  # a new kaomoji is being added
 
         # Shows the prompt to the selected kaomoji, with the commands.
         inside_kaomoji = INSIDE_KAOMOJI.format(code=code, status=status,
@@ -243,6 +256,12 @@ while True:
         #   add keyword1, keyword 2, etc, etcc
         #
         if command == "add":
+            changes_made = True  # new keywords are being added
+                                 # We should check for interface.add()
+                                 #  below for
+                                 #  errors before setting the `changes_made`
+                                 #  bit to True: the command may issue an
+                                 #  error, in which no changes were made.
             interface.add(args)
 
         #
@@ -261,7 +280,8 @@ while True:
         #   destroy
         #
         elif command == "destroy":
-            option = input("Delete the kaomoji from database? (y/N) ")
+            option = input("Delete the kaomoji `{}' from database? (y/N) "
+                           .format(code))
             if option in ('Y', 'y'):
                 interface.destroy()
                 print("Backing up database...")
@@ -283,19 +303,24 @@ while True:
         #
         elif command == "exit":
 
-            option = input("Save changes? (y/n) ")
+            if changes_made:
+                option = input("Save changes? (y/n) ")
 
-            if option in ('Y', 'y'):
+                if option in ('Y', 'y'):
 
-                print("Backing up database...")
-                interface.backup_db()
+                    print("Backing up database...")
+                    interface.backup_db()
 
-                print("Writing database...")
-                interface.write()
+                    print("Writing database...")
+                    interface.write()
 
-                exit(0)
+                    exit(0)
 
-            elif option in ('N', 'n'):
+                elif option in ('N', 'n'):
+                    exit(0)
+
+            # not changes_made
+            else:
                 exit(0)
 
         #
@@ -327,6 +352,11 @@ while True:
         #   rm keyword1, keyword 2, etc, etcc
         #
         elif command == "rm":
+            changes_made = True  # new keywords are being added
+            #  We should check for interface.rm() below for
+            #  errors before setting the `changes_made`
+            #  bit to True: the command may issue an
+            #  error, in which no changes were made.
             interface.rm(args=args)
             print(db.kaomojis[kaomoji.code].keywords)
 
