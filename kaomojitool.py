@@ -143,7 +143,7 @@ while True:
     print(WELCOME)
 
     # prompt 1
-    code = input(CONSOLE)
+    code = input(CONSOLE).strip()
 
     if code == "/exit":
         option = input("Save changes? (y/n) ")
