@@ -43,6 +43,7 @@ COMMANDS_HELP = str()
 COMMANDS_HELP = """\
 List of commands for the selected kaomoji/database:\n
 """
+#TODO:place the loop below to run only when you select it to run, instead of when you open the tool
 for command, description in COMMANDS.items():
     COMMANDS_HELP += "{command}: {description}\n"\
         .format(command=command, description=description)
