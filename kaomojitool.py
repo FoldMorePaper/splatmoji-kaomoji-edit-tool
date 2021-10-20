@@ -111,7 +111,7 @@ class KaomojiTool:
 
 
     def exit(self):
-        """Exists the command line interface."""
+        """Exits the command line interface."""
 
         option = input("Save changes? (y/n) ")
 
