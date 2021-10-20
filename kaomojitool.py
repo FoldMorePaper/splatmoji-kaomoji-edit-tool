@@ -6,6 +6,8 @@ import time
 from kaomoji import Kaomoji
 from kaomoji import KaomojiDB
 
+import random
+
 def backup_db(db: KaomojiDB):
 
     timestamp = time.time()
@@ -308,13 +310,14 @@ while True:
         #
         # The `RANDOM` command
         #
-        # command usage
+        # command usage:
         #   random
         #
-        # THIS IS BEING THOUGH OF BEING IMPLEMENTED SO WE CAN TAG BETTER SOME
-        # KAOMOJIS WHICH AREN'T BEING
-        #
-        # elif args[0] == "random":
+        elif command == "random":
+            chosen_random = random.choice(list(db.kaomojis.keys()))
+            code = chosen_random
+            continue
+
         #     pass
 
         #
