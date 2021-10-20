@@ -66,13 +66,23 @@ You chose the kaomoji {code}
 """
 
 class KaomojiTool:
+    """ This class implements facilities for interacting with the command line
+            interface.
+    """
 
     def __init__(self, db, kaomoji):
+        """ Opens the database and selects the user-selected kaomoji for
+                editing it inside the database.
+        """
+
         self.db = db
         self.kaomoji = kaomoji
 
 
     def add(self, args):
+        """ Implements the `add` command; adds keywords to the selected kaomoji.
+        """
+
         keywords = args.split(",")
         for keyword in keywords:
             #self.db.kaomojis[self.kaomoji.code].add_keyword(keyword)
@@ -82,6 +92,7 @@ class KaomojiTool:
     #     pass
 
     def backup_db(self):
+        """Creates a backup of the database before rewriting it."""
 
         timestamp = time.time()
         backup_filename = "{filename}.{timestamp}.bkp"\
@@ -97,6 +108,7 @@ class KaomojiTool:
 
 
     def exit(self):
+        """Exists the command line interface."""
 
         option = input("Save changes? (y/n) ")
 
@@ -115,12 +127,19 @@ class KaomojiTool:
         print("Doing nothing as the answer was invalid.")
 
     def help(self):
+        """Shows help; help is show after every command, so doing nothing shows
+                the help menu with the commands.
+        """
+
         pass
 
     # elif args[0] == "random":
     #     pass
 
     def rm(self, args):
+        """ Implements the `rm` command; removes keywords to the selected
+                kaomoji.
+        """
 
         keywords = args.split(",")
         for keyword in keywords:
@@ -130,12 +149,15 @@ class KaomojiTool:
 
         self.db.write()
 
-if len(argv) < 2:
+if len(argv) < 2:  # If we don't have a database file via second argument, ask
+                   #     for it
+
     print(USAGE)
     exit(1)
 
 filename = argv[1]
-db = KaomojiDB(filename=filename)
+db = KaomojiDB(filename=filename)  # populate out KaomojiDB class with
+                                   #     the db file.
 
 # kaomoji selection
 while True:
@@ -143,8 +165,10 @@ while True:
     print(WELCOME)
 
     # prompt 1
+    # prompts to enter a kaomoji - be it already existing or to be created.
     code = input(CONSOLE).strip()
 
+    # implements the `/exit` command in the kaomoji selection prompt
     if code == "/exit":
         option = input("Save changes? (y/n) ")
 
@@ -167,10 +191,16 @@ while True:
     # NOTE: the only two important variables we receive here are `db` and
     #       `kaomoji`; we can easily encapsulate these code below inside
     #        a function or a class then. Maybe to be done.
+    #
+    # Implements the second prompt, this is, inside the chosen kaomoji, with
+    #   commands in respect to it.
     while True:
 
         selected_kaomoji = Kaomoji(code)
 
+        # If the kaomoji exists, loads it with the current keywords it have in
+        #   the database;
+        # If it doesn't exists, then create it.
         if db.kaomoji_exists(selected_kaomoji):
             #kaomoji = db.get_kaomoji_by_code(code)
             kaomoji = db.kaomojis[code]
@@ -183,35 +213,50 @@ while True:
             kaomoji = db.add_kaomoji(selected_kaomoji)
             #kaomoji = db.kaomojis.update({selected_kaomoji.code: list()})
 
+        # Shows the prompt to the selected kaomoji, with the commands.
         inside_kaomoji = INSIDE_KAOMOJI.format(code=code, status=status,
                                                commands=COMMANDS_HELP)
 
         print(inside_kaomoji)
 
+        # Shows the seleted kaomoji with it's current keywords.
         repr(kaomoji)
+
         # prompt 2
+        # prompts for the command
         command_line = input(COMMAND)
 
+        # gets the command and its arguments
         command, *args = command_line.split(" ", maxsplit=1)
         args = " ".join(args)
 
-        # let's instantiate our interface for given commands
+        # let's instantiate our interface for executing the given commands
+        #   This is done again after each command is issued.
         interface = KaomojiTool(db=db, kaomoji=kaomoji)
 
         #
-        # ADD
+        # The `ADD` command
+        #
+        # command usage:
+        #   add keyword1, keyword 2, etc, etcc
         #
         if command == "add":
             interface.add(args)
 
         #
-        # BACK
+        # The `BACK` command
+        #
+        # command usage:
+        #   back
         #
         elif command == "back":
             break
 
         #
-        # DESTROY
+        # The `DESTROY` command
+        #
+        # command usage:
+        #   destroy
         #
         elif command == "destroy":
             option = input("Delete the kaomoji from database? (y/N) ")
@@ -229,7 +274,10 @@ while True:
                 continue
 
         #
-        # EXIT
+        # the `EXIT` command
+        #
+        # command usaage:
+        #   exit
         #
         elif command == "exit":
 
@@ -249,13 +297,19 @@ while True:
                 exit(0)
 
         #
-        # HELP
+        # The `HELP` command
+        #
+        # command usage:
+        #   help
         #
         elif command == "help":
             continue
 
         #
-        # RANDOM
+        # The `RANDOM` command
+        #
+        # command usage
+        #   random
         #
         # THIS IS BEING THOUGH OF BEING IMPLEMENTED SO WE CAN TAG BETTER SOME
         # KAOMOJIS WHICH AREN'T BEING
@@ -264,13 +318,20 @@ while True:
         #     pass
 
         #
-        # RM
+        # The `RM` command
+        #
+        # command usage:
+        #   rm keyword1, keyword 2, etc, etcc
         #
         elif command == "rm":
             interface.rm(args=args)
             print(db.kaomojis[kaomoji.code].keywords)
+
         #
-        # WRITE
+        # The `WRITE` command
+        #
+        # command usage:
+        #   write
         #
         elif command == "write":
 
