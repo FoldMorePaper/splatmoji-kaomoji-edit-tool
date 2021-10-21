@@ -198,3 +198,27 @@ class KaomojiDB:
         self.kaomojis.update({kaomoji.code: kaomoji})
 
         return self.kaomojis[kaomoji.code]
+
+
+    def compare(self, other):
+        """Compares two KaomojiDB instances."""
+
+        # Test `other` to see if is an instance os KaomojiDB; throw exception
+        #   if not.
+
+        differences_dict = dict()
+
+        for kaomoji_code in other.kaomojis:
+            if kaomoji_code not in self.kaomojis:
+                different = other.kaomojis[kaomoji_code]
+                differences_dict.update({kaomoji_code: different})
+
+            else:
+                for keyword in other.kaomojis[kaomoji_code].keywords:
+                    if not keyword in self.kaomojis[kaomoji_code].keywords:
+                        if not kaomoji_code in differences_dict:
+                            different = Kaomoji(code=kaomoji_code, keywords=list())
+                            differences_dict.update({kaomoji_code: different})
+                        differences_dict[kaomoji_code].keywords.append(keyword)
+
+        return differences_dict
