@@ -1,4 +1,5 @@
 from hashlib import sha256
+import random
 
 
 class Kaomoji:
@@ -17,13 +18,11 @@ class Kaomoji:
 
         self.hash = self._makehash(code)
 
-
     def add_keyword(self, keyword):
         """Adds a keyword to this kaomoji entity."""
 
         if not keyword in self.keywords:
             self.keywords.append(keyword.strip())
-
 
     def remove_keyword(self, keyword):
         """Removes a keyword to this kaomoji entity."""
@@ -31,6 +30,8 @@ class Kaomoji:
         if keyword in self.keywords:
             self.keywords.remove(keyword.strip())
 
+    def get_keywords_size(self):
+        return len(self.keywords)
 
     def _makehash(self, code):
         """Gives a UUID for a given kaomoji, for comparison.
@@ -49,14 +50,12 @@ class Kaomoji:
 
         return the_hash
 
-
     def __eq__(self, other):
         """ Implements the == (equality) operator to compare two Kaomoji
                 instances.
         """
 
         return hash(self) == hash(other)
-
 
     def __hash__(self):
         """ Implements hash() which makes a given emoji to be compared as a
@@ -65,14 +64,12 @@ class Kaomoji:
 
         return self.hash
 
-
     def __repr__(self):
         """ Implements a repr() pythonic programmatic representation of the
                 Kaomoji entity.
         """
 
         return "<Kaomoji `{}'; kwords: `{}'>".format(self.code, self.keywords)
-
 
     def __str__(self):
         """Implements a str() string representation of the kaomoji."""
@@ -82,7 +79,6 @@ class Kaomoji:
 
 class KaomojiDB:
     """Offers facilities to edit and check the DB file."""
-
 
     def __init__(self, filename=None):
         """
@@ -101,7 +97,6 @@ class KaomojiDB:
             self.filename = filename
             self.load_file(filename=self.filename)
 
-
     def load_file(self, filename):
         """ Loads a db file reading it in the format usable by KaomojiDB class.
         """
@@ -111,7 +106,7 @@ class KaomojiDB:
         self.entry_num = int()
 
         db_file = open(filename, "r")
-        #with open(filename) as dbfile:
+        # with open(filename) as dbfile:
         lines = db_file.readlines()
 
         for line in lines:
@@ -128,7 +123,6 @@ class KaomojiDB:
             self.kaomojis.update({code: kaomoji})
 
         self.entry_num = len(self.kaomojis)
-
 
     def write(self, filename=None):
         """Writes a db file with the changes made."""
@@ -147,15 +141,13 @@ class KaomojiDB:
         db_file.close()
         self.load_file(filename=filename)
 
-
     def kaomoji_exists(self, other: Kaomoji):
         """Checks if a kaomoji exists already in the database."""
 
         if other.code in self.kaomojis:
-                return True
-
-        return False
-
+            return True
+        else:
+            return False
 
     def add_kaomoji(self, kaomoji: Kaomoji):
         """Adds a Kaomoji to the database."""
@@ -164,18 +156,15 @@ class KaomojiDB:
 
         return self.kaomojis[kaomoji.code]
 
-
     def get_kaomoji_by_code(self, code: str):
         """Gets a Kaomoji with it's current keywords from the database."""
 
         return self.kaomojis[code]
 
-
     def get_kaomoji_by_kaomoji(self, other: Kaomoji):
         """Gets a Kaomoji with it's current keywords from the database."""
 
         return self.kaomojis[other.code]
-
 
     def get_kaomoji_by_hash(self, thehash: int):
         """Gets a Kaomoji with it's current keywords from the database."""
@@ -184,13 +173,11 @@ class KaomojiDB:
             if thehash == kaomoji.hash:
                 return kaomoji
 
-
     def remove_kaomoji(self, kaomoji: Kaomoji):
         """Removes a Kaomoji from the database."""
 
         if kaomoji.code in self.kaomojis:
             self.kaomojis.pop(kaomoji.code)
-
 
     def update_kaomoji(self, kaomoji: Kaomoji):
         """Updates keywords to database."""
@@ -198,7 +185,6 @@ class KaomojiDB:
         self.kaomojis.update({kaomoji.code: kaomoji})
 
         return self.kaomojis[kaomoji.code]
-
 
     def compare(self, other):
         """Compares two KaomojiDB instances."""
@@ -217,7 +203,8 @@ class KaomojiDB:
                 for keyword in other.kaomojis[kaomoji_code].keywords:
                     if not keyword in self.kaomojis[kaomoji_code].keywords:
                         if not kaomoji_code in differences_dict:
-                            different = Kaomoji(code=kaomoji_code, keywords=list())
+                            different = Kaomoji(
+                                code=kaomoji_code, keywords=list())
                             differences_dict.update({kaomoji_code: different})
                         differences_dict[kaomoji_code].keywords.append(keyword)
 

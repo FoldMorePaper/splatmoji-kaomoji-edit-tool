@@ -2,98 +2,40 @@
 
 from sys import argv
 import time
-
-from kaomoji import Kaomoji
-from kaomoji import KaomojiDB
-
 import random
 
-def backup_db(db: KaomojiDB):
+from kaomoji import *
+from env_vars import *
 
-    timestamp = time.time()
-    backup_filename = "{filename}.{timestamp}.bkp".format(filename=db.filename,
-                                                          timestamp=timestamp)
-    backup = KaomojiDB(filename=db.filename)
-    backup.write(filename=backup_filename)
-
-USAGE = """
-Usage:
-  {0} <db file name>
-  If database file doesn't exist, it will be created.    
-
-  For more info visit: https://github.com/iacchus/splatmoji-kaomoji-edit-tool
-""".format(argv[0])
-
-# PROMPTS
-CONSOLE = "(enter kaomoji) "
-COMMAND = "(enter command) "
-RANDOM = "(enter a comma-separated list of keywords; /next to next," \
-         " /exit to exit) "
-
-COMMANDS =  {
-    'add': "Add one or more comma-separated keyword(s) to the kaomoji",
-    'back': "Go back to the kaomoji selection console",
-    'destroy': "Delete the kaomoji from the database",
-    'exit': "Ask to save the changes if there are changes, then exit",
-    "help": "Show commands (this message)",
-    'random': "Select a random kaomoji so you can add more keywords to it",
-    'rm': "Remove one or more comma-separated keyword(s) from the kaomoji",
-    'write': "Backup the database and save the changes to the original",
-}
-
-COMMANDS_HELP = str()
-COMMANDS_HELP = """\
-List of commands for the selected kaomoji/database:\n
-"""
-#TODO:place the loop below to run only when you select it to run, instead of when you open the tool
-for command, description in COMMANDS.items():
-    COMMANDS_HELP += "{command}: {description}\n"\
-        .format(command=command, description=description)
-
-WELCOME = """
----
-Welcome. Select a kaomoji first, and then press <enter>, for example:
-{console}(ヘ。ヘ)
-
-or /random to select a random kaomoji to edit;
-or /exit to exit.
----
-
-""".format(console=CONSOLE)
-
-INSIDE_KAOMOJI = """
-You chose the kaomoji `{code}'
-
-{status}
-
-{commands}
-"""
 
 class KaomojiTool:
     """ This class implements facilities for interacting with the command line
             interface.
     """
+    # kaomoji global var Kamomoji()
+    # db global var KaomojiDB()
+    changes_made = False
 
-    def __init__(self, db, kaomoji):
+    def __init__(self, db):
         """ Opens the database and selects the user-selected kaomoji for
                 editing it inside the database.
         """
 
         self.db = db
-        self.kaomoji = kaomoji
-
 
     def add(self, args):
         """ Implements the `add` command; adds keywords to the selected kaomoji.
         """
+        try:
+            keywords = args.split(",")
+            for keyword in keywords:
+                # self.db.kaomojis[self.kaomoji.code].add_keyword(keyword)
+                self.kaomoji.add_keyword(keyword)
+            self.changes_made = True
+        except:
+            self.changes_made = False
 
-        keywords = args.split(",")
-        for keyword in keywords:
-            #self.db.kaomojis[self.kaomoji.code].add_keyword(keyword)
-            self.kaomoji.add_keyword(keyword)
-
-    # def back(self):
-    #     pass
+    # TODO: def back(self):
 
     def backup_db(self):
         """Creates a backup of the database before rewriting it."""
@@ -106,29 +48,74 @@ class KaomojiTool:
         backup.write(filename=backup_filename)
 
     def destroy(self):
-        self.db.remove_kaomoji(self.kaomoji)
-        #del self.kaomoji
-
-
+        option = input("Delete the kaomoji `{}' from database? (y/N) "
+                       .format(code))
+        if option in ('Y', 'y'):
+            self.db.remove_kaomoji(self.kaomoji)
+            print("Backing up database...")
+            self.backup_db()
+            print("Writing database...")
+            self.write()
+            return True  # break
+        if option in ('N', 'n'):
+            return False  # continue
+        else:
+            print("Doing nothing as the answer was invalid.")
+            return False  # continue
 
     def exit(self):
         """Exits the command line interface."""
+        if changes_made:
+            option = input("Save changes? (y/n) ")
 
-        option = input("Save changes? (y/n) ")
+            if option in ('Y', 'y'):
+                print("Backing up database...")
+                self.backup_db(db=self.db)
 
-        if option in ('Y', 'y'):
-            print("Backing up database...")
-            backup_db(db=self.db)
+                print("Writing database...")
+                self.db.write()
+                self.changes_made = False
+                exit(0)
 
-            print("Writing database...")
-            self.db.write()
+            elif option in ('N', 'n'):
+                exit(0)
 
+            print("Doing nothing as the answer was invalid.")
+            return False
+        else:
             exit(0)
 
-        elif option in ('N', 'n'):
-            exit(0)
+        # inside kaomoji
+        # NOTE: the only two important variables we receive here are `db` and
+        #       `kaomoji`; we can easily encapsulate these code below inside
+        #        a function or a class then. Maybe to be done.
+        #
+        # Implements the second prompt, this is, inside the chosen kaomoji, with
+        #   commands in respect to it.
+    def set_kaomoji(self, kaomoji):
+        self.kaomoji = kaomoji
 
-        print("Doing nothing as the answer was invalid.")
+    def check_kaomoji(self, selected_kaomoji):
+        # If the kaomoji exists, loads it with the current keywords it have in
+        #   the database;
+        # If it doesn't exists, then create it.
+        if self.db.kaomoji_exists(selected_kaomoji):
+            #kaomoji = db.get_kaomoji_by_code(code)
+            self.kaomoji = self.db.kaomojis[code]
+            num = len(self.kaomoji.keywords)
+            status = "The selected kaomoji exists on the database and has" \
+                " currently {num} keywords: {keywords}" \
+                .format(num=num, keywords=", ".join(self.kaomoji.keywords))
+        else:
+            self.kaomoji = self.db.add_kaomoji(selected_kaomoji)
+            #kaomoji = db.kaomojis.update({selected_kaomoji.code: list()})
+            changes_made = True  # a new kaomoji is being added
+            status = "New kaomoji! Not on the database currently."
+        return status
+
+    def get_random_kaomoji(self):
+        random_kaomoji = random.choice(list(self.db.kaomojis.keys()))
+        return random_kaomoji
 
     def help(self):
         """Shows help; help is show after every command, so doing nothing shows
@@ -144,233 +131,136 @@ class KaomojiTool:
         """ Implements the `rm` command; removes keywords to the selected
                 kaomoji.
         """
+        try:
+            keywords = args.split(",")
+            for keyword in keywords:
+                self.kaomoji.remove_keyword(keyword)
 
-        keywords = args.split(",")
-        for keyword in keywords:
-            self.kaomoji.remove_keyword(keyword)
+            print(tool.db.kaomojis[tool.kaomoji.code].keywords)
+            self.changes_made = True
+        except:
+            self.changes_made = False
 
     def write(self):
+        print("Backing up database...")
+        self.backup_db()
 
+        print("Writing database...")
         self.db.write()
+        self.changes_made = False
+
 
 if len(argv) < 2:  # If we don't have a database file via second argument, ask
-                   #     for it
+    #     for it
     print(USAGE)
     exit(1)
 
 filename = argv[1]
-db = KaomojiDB(filename=filename)  # populate out KaomojiDB class with
-                                   #     the db file.
+# instanciate a KaomojiTool with an instance of KaomojiDB using the db file.
+tool = KaomojiTool(KaomojiDB(filename=filename),)
 
-changes_made = False
 
-# kaomoji selection
-while True:
+###################################################################################################
+# ---- Menu >>--->> kaomoji selection menu first neet to select a kaomoji-------------------------#
+###################################################################################################
+def menu():
 
     print(WELCOME)
 
-    # prompt 1
-    # prompts to enter a kaomoji - be it already existing or to be created.
     code = input(CONSOLE).strip()
 
     if code == "/random":
-        chosen_random = random.choice(list(db.kaomojis.keys()))
-        code = chosen_random
+        code = tool.db.get_random_kaomoji()
 
     # implements the `/exit` command in the kaomoji selection prompt
-    elif code == "/exit":
-
-        if changes_made:
-
-            option = input("Save changes? (y/n) ")
-
-            if option in ('Y', 'y'):
-                print("Backing up database...")
-                backup_db(db=db)
-
-                print("Writing database...")
-                db.write()
-
-                exit(0)
-
-            elif option in ('N', 'n'):
-                exit(0)
-
-            print("Doing nothing as the answer was invalid.")
-            continue
-
-        else:  # not changes_made
-            exit(0)
-
-    # inside kaomoji
-    # NOTE: the only two important variables we receive here are `db` and
-    #       `kaomoji`; we can easily encapsulate these code below inside
-    #        a function or a class then. Maybe to be done.
-    #
-    # Implements the second prompt, this is, inside the chosen kaomoji, with
-    #   commands in respect to it.
+    elif code == "/exit" | code == "exit":
+        tool.exit()
+###################################################################################################
+# ---- end of the selection menu section >>----------->> kaomoji action menu ---------------------#
+###################################################################################################
     while True:
-
-        selected_kaomoji = Kaomoji(code)
-
-        # If the kaomoji exists, loads it with the current keywords it have in
-        #   the database;
-        # If it doesn't exists, then create it.
-        if db.kaomoji_exists(selected_kaomoji):
-            #kaomoji = db.get_kaomoji_by_code(code)
-            kaomoji = db.kaomojis[code]
-            num = len(kaomoji.keywords)
-            status = "The selected kaomoji exists on the database and has" \
-                     " currently {num} keywords: {keywords}" \
-                .format(num=num, keywords=", ".join(kaomoji.keywords))
-        else:
-            status = "New kaomoji! Not on the database currently."
-            kaomoji = db.add_kaomoji(selected_kaomoji)
-            #kaomoji = db.kaomojis.update({selected_kaomoji.code: list()})
-            changes_made = True  # a new kaomoji is being added
+        # set the selected kaomoji on the tool so we can manage it inside it
+        tool.set_kaomoji(Kaomoji(code))
+        status = tool.check_kaomoji(tool.kaomoji)
 
         # Shows the prompt to the selected kaomoji, with the commands.
-        inside_kaomoji = INSIDE_KAOMOJI.format(code=code, status=status,
-                                               commands=COMMANDS_HELP)
-
+        inside_kaomoji = INSIDE_KAOMOJI.format(
+            code=code, status=status, commands=COMMANDS_HELP)
         print(inside_kaomoji)
 
         # Shows the seleted kaomoji with it's current keywords.
-        repr(kaomoji)
+        repr(tool.kaomoji)
 
         # prompt 2
-        # prompts for the command
-        command_line = input(COMMAND)
+        # shows the command prompt
+        command_input = input(COMMAND)
+        print(status)
 
         # gets the command and its arguments
-        command, *args = command_line.split(" ", maxsplit=1)
+        command, *args = command_input.split(" ", maxsplit=1)
         args = " ".join(args)
-
-        # let's instantiate our interface for executing the given commands
-        #   This is done again after each command is issued.
-        interface = KaomojiTool(db=db, kaomoji=kaomoji)
-
-        #
+###################################################################################################
+# ---- commands execution ------------------------------------------------------------------------#
+###################################################################################################
         # The `ADD` command
-        #
         # command usage:
         #   add keyword1, keyword 2, etc, etcc
         #
         if command == "add":
-            changes_made = True  # new keywords are being added
-                                 # We should check for interface.add()
-                                 #  below for
-                                 #  errors before setting the `changes_made`
-                                 #  bit to True: the command may issue an
-                                 #  error, in which no changes were made.
-            interface.add(args)
+            tool.add(args)
 
-        #
-        # The `BACK` command
-        #
+        # The `BACK` command, gets you back to the selection menu
         # command usage:
         #   back
         #
         elif command == "back":
             break
 
-        #
-        # The `DESTROY` command
-        #
+        # The `DESTROY` command removes selected kaomoji from the database and writes it to file
         # command usage:
         #   destroy
         #
         elif command == "destroy":
-            option = input("Delete the kaomoji `{}' from database? (y/N) "
-                           .format(code))
-            if option in ('Y', 'y'):
-                interface.destroy()
-                print("Backing up database...")
-                interface.backup_db()
-                print("Writing database...")
-                interface.write()
+            if tool.destroy():
                 break
-            if option in ('N', 'n'):
-                continue
             else:
-                print("Doing nothing as the answer was invalid.")
                 continue
 
-        #
         # the `EXIT` command
-        #
         # command usaage:
         #   exit
         #
         elif command == "exit":
+            tool.exit()
 
-            if changes_made:
-                option = input("Save changes? (y/n) ")
-
-                if option in ('Y', 'y'):
-
-                    print("Backing up database...")
-                    interface.backup_db()
-
-                    print("Writing database...")
-                    interface.write()
-
-                    exit(0)
-
-                elif option in ('N', 'n'):
-                    exit(0)
-
-            # not changes_made
-            else:
-                exit(0)
-
-        #
-        # The `HELP` command
-        #
+        # The `HELP` command: just waits the help to be shown at the beggining.
         # command usage:
         #   help
         #
         elif command == "help":
             continue
 
-        #
-        # The `RANDOM` command
-        #
+        # The `RANDOM` command, selects a new random kaomoji
         # command usage:
         #   random
         #
         elif command == "random":
-            chosen_random = random.choice(list(db.kaomojis.keys()))
-            code = chosen_random
-            continue
+            code = tool.get_random_kaomoji()
 
-        #     pass
-
-        #
-        # The `RM` command
-        #
+        # The `RM` command removes keywords from the selected kaomoji
         # command usage:
         #   rm keyword1, keyword 2, etc, etcc
         #
         elif command == "rm":
-            changes_made = True  # new keywords are being added
-            #  We should check for interface.rm() below for
-            #  errors before setting the `changes_made`
-            #  bit to True: the command may issue an
-            #  error, in which no changes were made.
-            interface.rm(args=args)
-            print(db.kaomojis[kaomoji.code].keywords)
+            tool.rm(args=args)
 
-        #
-        # The `WRITE` command
-        #
+        # The `WRITE` command will write changes to db file
         # command usage:
         #   write
         #
         elif command == "write":
+            tool.write()
 
-            print("Backing up database...")
-            interface.backup_db()
 
-            print("Writing database...")
-            interface.write()
+while True:
+    menu()
