@@ -95,11 +95,11 @@ class KaomojiTool:
     def set_kaomoji(self, kaomoji):
         self.kaomoji = kaomoji
 
-    def check_kaomoji(self, selected_kaomoji):
+    def check_kaomoji(self, code):
         # If the kaomoji exists, loads it with the current keywords it have in
         #   the database;
         # If it doesn't exists, then create it.
-        if self.db.kaomoji_exists(selected_kaomoji):
+        if self.db.kaomoji_exists(self.kaomoji):
             #kaomoji = db.get_kaomoji_by_code(code)
             self.kaomoji = self.db.kaomojis[code]
             num = len(self.kaomoji.keywords)
@@ -107,7 +107,7 @@ class KaomojiTool:
                 " currently {num} keywords: {keywords}" \
                 .format(num=num, keywords=", ".join(self.kaomoji.keywords))
         else:
-            self.kaomoji = self.db.add_kaomoji(selected_kaomoji)
+            self.kaomoji = self.db.add_kaomoji(self.kaomoji)
             #kaomoji = db.kaomojis.update({selected_kaomoji.code: list()})
             changes_made = True  # a new kaomoji is being added
             status = "New kaomoji! Not on the database currently."
@@ -173,7 +173,7 @@ def menu():
         code = tool.db.get_random_kaomoji()
 
     # implements the `/exit` command in the kaomoji selection prompt
-    elif code == "/exit" | code == "exit":
+    elif (code == "/exit") | (code == "exit"):
         tool.exit()
 ###################################################################################################
 # ---- end of the selection menu section >>----------->> kaomoji action menu ---------------------#
@@ -181,7 +181,7 @@ def menu():
     while True:
         # set the selected kaomoji on the tool so we can manage it inside it
         tool.set_kaomoji(Kaomoji(code))
-        status = tool.check_kaomoji(tool.kaomoji)
+        status = tool.check_kaomoji(code)
 
         # Shows the prompt to the selected kaomoji, with the commands.
         inside_kaomoji = INSIDE_KAOMOJI.format(
